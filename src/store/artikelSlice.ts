@@ -11,20 +11,35 @@ const initialState: ArtikelState = {
   liste: [
     {
       id: 1,
-      name: 'T-Shirt',
+      name: 'Deko',
       preis: 29.99,
+      kategorie: {
+        id: 1,
+        name: 'Deko',
+        erstellt_am: new Date().toISOString()
+      },
       erstellt_am: new Date().toISOString(),
     },
     {
       id: 2,
-      name: 'Jeans',
+      name: 'Mode',
       preis: 79.99,
+      kategorie: {
+        id: 2,
+        name: 'Mode',
+        erstellt_am: new Date().toISOString()
+      },
       erstellt_am: new Date().toISOString(),
     },
     {
       id: 3,
-      name: 'Pullover',
+      name: 'Accessoires',
       preis: 49.99,
+      kategorie: {
+        id: 3,
+        name: 'Accessoires',
+        erstellt_am: new Date().toISOString()
+      },
       erstellt_am: new Date().toISOString(),
     },
   ],

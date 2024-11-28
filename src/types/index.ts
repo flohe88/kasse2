@@ -2,6 +2,7 @@ export interface Artikel {
   id: number;
   name: string;
   preis: number;
+  kategorie?: Kategorie;
   erstellt_am: string;
 }
 

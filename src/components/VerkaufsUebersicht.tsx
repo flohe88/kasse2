@@ -1,23 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getVerkaeufeFuerTag, exportiereVerkaefeAlsCSV, loescheArtikelAusVerkauf, loescheVerkauf } from '../services/verkaufService';
 import { formatCurrency } from '../utils/format';
-import type { Verkauf as VerkaufType, VerkaufArtikel as VerkaufArtikelType } from '../types';
-
-interface Verkauf extends VerkaufType {
-  id: number;
-  datum: string;
-  gesamtbetrag: number;
-  bezahlter_betrag: number;
-  rueckgeld: number;
-  artikel: VerkaufArtikelType[];
-}
-
-interface VerkaufArtikel extends VerkaufArtikelType {
-  artikel_name: string;
-  preis: number;
-  menge?: number;
-  geloescht?: boolean;
-}
+import { Verkauf, VerkaufArtikel as VerkaufArtikelType } from '../types';
 
 const VerkaufsUebersicht: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -29,7 +13,7 @@ const VerkaufsUebersicht: React.FC = () => {
   const loadVerkauefe = async () => {
     setIsLoading(true);
     try {
-      const verkauefe = await getVerkaeufeFuerTag(selectedDate);
+      const verkauefe = await getVerkaeufeFuerTag(new Date(selectedDate));
       // Filtere Verkäufe ohne Artikel heraus
       const verkaeufeMitArtikeln = verkauefe.filter(verkauf => {
         try {
@@ -43,7 +27,7 @@ const VerkaufsUebersicht: React.FC = () => {
         }
       });
       setVerkauefe(verkaeufeMitArtikeln);
-      const gesamtUmsatz = verkaeufeMitArtikeln.reduce((sum, v) => sum + v.gesamtbetrag, 0);
+      const gesamtUmsatz = verkaeufeMitArtikeln.reduce((sum, v) => sum + (v.gesamtbetrag || 0), 0);
       setTagesumsatz(gesamtUmsatz);
     } catch (error) {
       console.error('Fehler beim Laden der Verkäufe:', error);

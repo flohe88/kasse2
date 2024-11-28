@@ -12,12 +12,12 @@ export const speichereVerkauf = async (verkauf: Verkauf): Promise<Verkauf> => {
   try {
     const supabaseVerkauf = {
       datum: new Date().toISOString(),
-      gesamtbetrag: formatNumber(verkauf.gesamtbetrag),
-      bezahlter_betrag: formatNumber(verkauf.bezahlterBetrag),
-      rueckgeld: formatNumber(verkauf.rueckgeld),
+      gesamtbetrag: formatNumber(verkauf.gesamtbetrag || 0),
+      bezahlter_betrag: formatNumber(verkauf.bezahlterBetrag || verkauf.bezahlter_betrag || 0),
+      rueckgeld: formatNumber(verkauf.rueckgeld || 0),
       artikel: JSON.stringify(verkauf.artikel.map(artikel => ({
         artikel_name: artikel.artikel_name,
-        preis: formatNumber(artikel.preis),
+        preis: formatNumber(artikel.preis || 0),
         menge: artikel.menge || 1
       })))
     };
@@ -43,7 +43,7 @@ export const speichereVerkauf = async (verkauf: Verkauf): Promise<Verkauf> => {
     const artikelEintraege = verkauf.artikel.map(artikel => ({
       verkauf_id: data.id,
       artikel_name: artikel.artikel_name,
-      preis: formatNumber(artikel.preis),
+      preis: formatNumber(artikel.preis || 0),
       menge: artikel.menge || 1
     }));
 
@@ -133,8 +133,8 @@ export const getVerkaeufeFuerTag = async (datum: Date): Promise<Verkauf[]> => {
         return {
           ...verkauf,
           artikel: artikelArray,
-          gesamtbetrag: Number(verkauf.gesamtbetrag),
-          bezahlter_betrag: Number(verkauf.bezahlter_betrag)
+          gesamtbetrag: Number(verkauf.gesamtbetrag || 0),
+          bezahlter_betrag: Number(verkauf.bezahlter_betrag || 0)
         };
       } catch (e) {
         console.error('Fehler bei der Konvertierung des Verkaufs', verkauf.id, ':', e);
