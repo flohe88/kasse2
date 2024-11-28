@@ -10,7 +10,7 @@ import './App.css';
 
 const MainContent: React.FC = () => {
   const [showVerkaufsUebersicht, setShowVerkaufsUebersicht] = useState(false);
-  const artikel = useSelector((state: RootState) => state.artikel.artikel);
+  const artikel = useSelector((state: RootState) => state.artikel.liste);
   const { gesamtbetrag } = useSelector((state: RootState) => state.warenkorb);
 
   return (
