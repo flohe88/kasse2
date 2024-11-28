@@ -5,14 +5,19 @@ export interface Artikel {
   erstellt_am: Date;
 }
 
+export interface VerkaufArtikel {
+  name: string;
+  preis: number;
+  menge?: number;
+}
+
 export interface Verkauf {
-  id: number;
-  artikel: {artikelId: number, menge: number, preis: number}[];
+  id?: number;
+  datum?: string;
   gesamtbetrag: number;
-  zahlungsmethode: string;
-  gezahlter_betrag: number;
+  bezahlterBetrag: number;
   rueckgeld: number;
-  zeitstempel: Date;
+  artikel: VerkaufArtikel[];
 }
 
 export interface WarenkorbArtikel {
