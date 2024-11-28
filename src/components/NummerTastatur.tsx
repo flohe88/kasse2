@@ -24,7 +24,7 @@ const NummerTastatur: React.FC<NummerTastaturProps> = ({
       }
     } else {
       // Verhindere mehr als zwei Nachkommastellen
-      const [vorKomma, nachKomma] = wert.split(',');
+      const [, nachKomma] = wert.split(',');
       if (nachKomma && nachKomma.length >= 2) {
         return;
       }

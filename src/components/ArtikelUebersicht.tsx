@@ -5,13 +5,15 @@ import { artikelHinzufuegen } from '../store/warenkorbSlice';
 import { Artikel } from '../types';
 import PreisDialog from './PreisDialog';
 
-const ArtikelUebersicht: React.FC = () => {
+interface ArtikelUebersichtProps {
+  artikel: Artikel[];
+}
+
+const ArtikelUebersicht: React.FC<ArtikelUebersichtProps> = ({ artikel }) => {
   const dispatch = useDispatch();
   const [suchbegriff, setSuchbegriff] = useState('');
   const [ausgewaehlterArtikel, setAusgewaehlterArtikel] = useState<Artikel | null>(null);
   
-  const artikel = useSelector((state: RootState) => state.artikel.liste);
-
   const gefilterteArtikel = artikel.filter((artikel) => 
     artikel.name.toLowerCase().includes(suchbegriff.toLowerCase())
   );

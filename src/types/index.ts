@@ -2,20 +2,20 @@ export interface Artikel {
   id: number;
   name: string;
   preis: number;
-  erstellt_am: Date;
+  erstellt_am: string;
 }
 
 export interface VerkaufArtikel {
-  name: string;
+  artikel_name: string;
   preis: number;
   menge?: number;
 }
 
 export interface Verkauf {
-  id?: number;
-  datum?: string;
+  id: number;
+  datum: string;
   gesamtbetrag: number;
-  bezahlterBetrag: number;
+  bezahlter_betrag: number;
   rueckgeld: number;
   artikel: VerkaufArtikel[];
 }
@@ -23,4 +23,10 @@ export interface Verkauf {
 export interface WarenkorbArtikel {
   artikel: Artikel;
   menge: number;
+}
+
+export interface Kategorie {
+  id: number;
+  name: string;
+  erstellt_am: string;
 }

@@ -37,12 +37,7 @@ const artikelSlice = createSlice({
   initialState,
   reducers: {
     artikelHinzufuegen: (state, action: PayloadAction<Artikel>) => {
-      // Konvertiere das Date-Objekt in einen String
-      const neuerArtikel = {
-        ...action.payload,
-        erstellt_am: action.payload.erstellt_am.toISOString()
-      };
-      state.liste.push(neuerArtikel);
+      state.liste.push(action.payload);
     },
     artikelAktualisieren: (state, action: PayloadAction<Artikel>) => {
       const index = state.liste.findIndex(artikel => artikel.id === action.payload.id);

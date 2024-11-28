@@ -3,6 +3,7 @@ import { Kategorie } from '../types';
 
 interface KategorieState {
   liste: Kategorie[];
+  ausgewaehlteKategorie: Kategorie | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -22,6 +23,7 @@ const initialState: KategorieState = {
       name: 'Accessoires',
     },
   ],
+  ausgewaehlteKategorie: null,
   isLoading: false,
   error: null,
 };
@@ -42,8 +44,17 @@ const kategorieSlice = createSlice({
     kategorieLoeschen: (state, action: PayloadAction<number>) => {
       state.liste = state.liste.filter(kategorie => kategorie.id !== action.payload);
     },
+    kategorieAuswaehlen: (state, action: PayloadAction<Kategorie | null>) => {
+      state.ausgewaehlteKategorie = action.payload;
+    },
   },
 });
 
-export const { kategorieHinzufuegen, kategorieAktualisieren, kategorieLoeschen } = kategorieSlice.actions;
+export const { 
+  kategorieHinzufuegen, 
+  kategorieAktualisieren, 
+  kategorieLoeschen,
+  kategorieAuswaehlen,
+} = kategorieSlice.actions;
+
 export default kategorieSlice.reducer;

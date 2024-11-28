@@ -18,25 +18,20 @@ const warenkorbSlice = createSlice({
   initialState,
   reducers: {
     artikelHinzufuegen: (state, action: PayloadAction<Artikel>) => {
-      // Konvertiere das Date-Objekt in einen String
-      const artikelMitString = {
-        ...action.payload,
-        erstellt_am: action.payload.erstellt_am.toISOString()
-      };
-      
       const vorhandenerArtikel = state.artikel.find(
-        (item) => item.artikel.id === artikelMitString.id
+        (item) => item.artikel.id === action.payload.id
       );
 
       if (vorhandenerArtikel) {
         vorhandenerArtikel.menge += 1;
       } else {
         state.artikel.push({
-          artikel: artikelMitString,
+          artikel: action.payload,
           menge: 1,
         });
       }
 
+      // Gesamtbetrag neu berechnen
       state.gesamtbetrag = state.artikel.reduce(
         (sum, item) => sum + item.artikel.preis * item.menge,
         0
