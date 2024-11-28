@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { getVerkaeufeFuerTag, exportiereVerkaefeAlsCSV, loescheArtikelAusVerkauf, loescheVerkauf } from '../services/verkaufService';
 import { formatCurrency } from '../utils/format';
-import { Verkauf, VerkaufArtikel } from '../types';
+import type { Verkauf as VerkaufType, VerkaufArtikel as VerkaufArtikelType } from '../types';
 
-interface Verkauf {
+interface Verkauf extends VerkaufType {
   id: number;
   datum: string;
   gesamtbetrag: number;
   bezahlter_betrag: number;
   rueckgeld: number;
-  artikel: VerkaufArtikel[];
+  artikel: VerkaufArtikelType[];
 }
 
-interface VerkaufArtikel {
+interface VerkaufArtikel extends VerkaufArtikelType {
   artikel_name: string;
   preis: number;
   menge?: number;

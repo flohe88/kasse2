@@ -16,7 +16,7 @@ export const speichereVerkauf = async (verkauf: Verkauf): Promise<Verkauf> => {
       bezahlter_betrag: formatNumber(verkauf.bezahlterBetrag),
       rueckgeld: formatNumber(verkauf.rueckgeld),
       artikel: JSON.stringify(verkauf.artikel.map(artikel => ({
-        artikel_name: artikel.name,
+        artikel_name: artikel.artikel_name,
         preis: formatNumber(artikel.preis),
         menge: artikel.menge || 1
       })))
@@ -42,7 +42,7 @@ export const speichereVerkauf = async (verkauf: Verkauf): Promise<Verkauf> => {
     // Zusätzlich Artikel in verkauf_artikel speichern
     const artikelEintraege = verkauf.artikel.map(artikel => ({
       verkauf_id: data.id,
-      artikel_name: artikel.name,
+      artikel_name: artikel.artikel_name,
       preis: formatNumber(artikel.preis),
       menge: artikel.menge || 1
     }));

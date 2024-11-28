@@ -21,15 +21,21 @@ const Zahlungsabwicklung: React.FC = () => {
   const handleBezahlung = () => {
     if (gezahlterBetragNumeric >= gesamtbetrag) {
       // Verkauf in der Datenbank speichern
-      speichereVerkauf({
+      const verkaufArtikel = artikel.map(item => ({
+        artikel_name: item.artikel.name,
+        preis: item.artikel.preis,
+        menge: item.menge
+      }));
+
+      const verkauf = {
+        datum: new Date().toISOString(),
         gesamtbetrag,
-        bezahlterBetrag: gezahlterBetragNumeric,
-        rueckgeld,
-        artikel: artikel.map(item => ({
-          name: item.artikel.name,
-          preis: item.artikel.preis * item.menge
-        }))
-      });
+        bezahlter_betrag: gezahlterBetragNumeric,
+        rueckgeld: rueckgeld,
+        artikel: verkaufArtikel
+      };
+
+      speichereVerkauf(verkauf);
 
       setZeigeBezahlt(true);
       dispatch(warenkorbLeeren());

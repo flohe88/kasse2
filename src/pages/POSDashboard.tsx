@@ -1,9 +1,14 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 import ArtikelUebersicht from '../components/ArtikelUebersicht';
 import Warenkorb from '../components/Warenkorb';
 import Zahlungsabwicklung from '../components/Zahlungsabwicklung';
 
 const POSDashboard: React.FC = () => {
+  const artikel = useSelector((state: RootState) => state.artikel.liste);
+  const { gesamtbetrag } = useSelector((state: RootState) => state.warenkorb);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow">
@@ -16,13 +21,17 @@ const POSDashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Linke Spalte - Artikelübersicht */}
           <div className="lg:col-span-2">
-            <ArtikelUebersicht />
+            <ArtikelUebersicht artikel={artikel} />
           </div>
 
           {/* Rechte Spalte - Warenkorb und Zahlungsabwicklung */}
           <div className="space-y-6">
             <Warenkorb />
-            <Zahlungsabwicklung />
+            {gesamtbetrag > 0 && (
+              <div className="mt-6">
+                <Zahlungsabwicklung />
+              </div>
+            )}
           </div>
         </div>
       </main>
