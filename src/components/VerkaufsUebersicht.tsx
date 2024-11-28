@@ -10,6 +10,10 @@ const VerkaufsUebersicht: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDate(event.target.value);
+  };
+
   const loadVerkauefe = async () => {
     setIsLoading(true);
     try {
@@ -37,10 +41,6 @@ const VerkaufsUebersicht: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    loadVerkauefe();
-  }, [selectedDate]);
-
   const handleExport = async () => {
     try {
       const startDatum = new Date(selectedDate);
@@ -66,10 +66,6 @@ const VerkaufsUebersicht: React.FC = () => {
     }
   };
 
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(event.target.value);
-  };
-
   const handleDelete = async (verkaufId: number) => {
     if (window.confirm('Möchten Sie diesen Verkauf wirklich löschen?')) {
       try {
@@ -85,6 +81,36 @@ const VerkaufsUebersicht: React.FC = () => {
       }
     }
   };
+
+  const handleDeleteArtikel = async (verkaufId: number, artikelId: number) => {
+    if (window.confirm('Möchten Sie diesen Artikel wirklich löschen?')) {
+      try {
+        await loescheArtikelAusVerkauf(verkaufId, artikelId);
+        // Aktualisiere die Verkäufe direkt in der State ohne neuen API-Call
+        setVerkauefe(prevVerkauefe => {
+          const verkaufIndex = prevVerkauefe.findIndex(v => v.id === verkaufId);
+          if (verkaufIndex !== -1) {
+            const artikelIndex = prevVerkauefe[verkaufIndex].artikel.findIndex(a => a.id === artikelId);
+            if (artikelIndex !== -1) {
+              prevVerkauefe[verkaufIndex].artikel.splice(artikelIndex, 1);
+              return [...prevVerkauefe];
+            }
+          }
+          return prevVerkauefe;
+        });
+        // Aktualisiere auch den Tagesumsatz
+        setTagesumsatz(prevUmsatz => 
+          prevUmsatz - (verkauefe.find(v => v.id === verkaufId)?.artikel.find(a => a.id === artikelId)?.preis || 0)
+        );
+      } catch (error) {
+        console.error('Fehler beim Löschen:', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadVerkauefe();
+  }, [selectedDate]);
 
   if (isLoading) {
     return <div>Lade Verkäufe...</div>;
@@ -102,7 +128,7 @@ const VerkaufsUebersicht: React.FC = () => {
           <input
             type="date"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={handleDateChange}
             className="px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <button
@@ -165,6 +191,15 @@ const VerkaufsUebersicht: React.FC = () => {
                       <span className="w-full md:w-auto">{artikel.artikel_name}</span>
                       <div className="flex items-center gap-3 ml-auto">
                         <span className="whitespace-nowrap">{artikel.menge || 1}x {formatCurrency(artikel.preis)}</span>
+                        <button
+                          onClick={() => handleDeleteArtikel(verkauf.id, artikel.id)}
+                          className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
+                          title="Artikel löschen"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   ))}

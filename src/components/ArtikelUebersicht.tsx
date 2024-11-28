@@ -10,6 +10,7 @@ interface ArtikelUebersichtProps {
 }
 
 const ArtikelUebersicht: React.FC<ArtikelUebersichtProps> = ({ artikel }) => {
+  const artikelListe = useSelector((state: RootState) => state.artikel.liste);
   const dispatch = useDispatch();
   const [suchbegriff, setSuchbegriff] = useState('');
   const [ausgewaehlterArtikel, setAusgewaehlterArtikel] = useState<Artikel | null>(null);

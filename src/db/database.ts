@@ -2,7 +2,8 @@ import Database from 'better-sqlite3';
 import path from 'path';
 
 // Initialisiere die Datenbank
-const db = new Database(path.join(__dirname, 'verkauefe.db'));
+const dbPath = path.resolve(__dirname, '../../kasse.db');
+const db: Database.Database = new Database(dbPath, { verbose: console.log });
 
 // Erstelle die Tabellen
 db.exec(`
@@ -96,4 +97,4 @@ export const getVerkaeufeFuerTag = (datum: Date) => {
   `).all(startDatum.toISOString(), endDatum.toISOString());
 };
 
-export default db;
+export { db };

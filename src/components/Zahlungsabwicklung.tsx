@@ -1,137 +1,138 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../store';
-import { warenkorbLeeren } from '../store/warenkorbSlice';
-import { formatCurrency } from '../utils/format';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 import { speichereVerkauf } from '../services/verkaufService';
+import { Verkauf } from '../types';
+import { formatCurrency } from '../utils/format';
 import NummerTastatur from './NummerTastatur';
-
-const SCHNELLWAHL_BETRAEGE = [5, 10, 20, 25, 30, 50];
 
 const Zahlungsabwicklung: React.FC = () => {
   const dispatch = useDispatch();
-  const { artikel, gesamtbetrag } = useSelector((state: RootState) => state.warenkorb);
-  const [gezahlterBetrag, setGezahlterBetrag] = useState<string>('');
-  const [zeigeBezahlt, setZeigeBezahlt] = useState(false);
-  const [zeigeNummerTastatur, setZeigeNummerTastatur] = useState(false);
+  const artikelListe = useSelector((state: RootState) => state.artikel.liste);
+  const [ausgewaehlteArtikel, setAusgewaehlteArtikel] = useState<{artikel_name: string, preis: number, menge: number}[]>([]);
+  const [bezahlterBetrag, setBezahlterBetrag] = useState(0);
 
-  const gezahlterBetragNumeric = parseFloat(gezahlterBetrag.replace(',', '.')) || 0;
-  const rueckgeld = Math.max(0, gezahlterBetragNumeric - gesamtbetrag);
+  const gesamtbetrag = ausgewaehlteArtikel.reduce((sum, artikel) => 
+    sum + (artikel.preis * (artikel.menge || 1)), 0);
+  const rueckgeld = Math.max(bezahlterBetrag - gesamtbetrag, 0);
 
-  const handleBezahlung = () => {
-    if (gezahlterBetragNumeric >= gesamtbetrag) {
-      // Verkauf in der Datenbank speichern
-      const verkaufArtikel = artikel.map(item => ({
-        artikel_name: item.artikel.name,
-        preis: item.artikel.preis,
-        menge: item.menge
-      }));
-
-      const verkauf = {
-        datum: new Date().toISOString(),
-        gesamtbetrag,
-        bezahlter_betrag: gezahlterBetragNumeric,
-        rueckgeld: rueckgeld,
-        artikel: verkaufArtikel
-      };
-
-      speichereVerkauf(verkauf);
-
-      setZeigeBezahlt(true);
-      dispatch(warenkorbLeeren());
-      setGezahlterBetrag('');
+  const handleArtikelHinzufuegen = (artikel: {artikel_name: string, preis: number}) => {
+    const existingArtikel = ausgewaehlteArtikel.find(a => a.artikel_name === artikel.artikel_name);
+    if (existingArtikel) {
+      setAusgewaehlteArtikel(prev => 
+        prev.map(a => 
+          a.artikel_name === artikel.artikel_name 
+            ? {...a, menge: (a.menge || 1) + 1} 
+            : a
+        )
+      );
+    } else {
+      setAusgewaehlteArtikel(prev => [...prev, {...artikel, menge: 1}]);
     }
   };
 
-  const handleSchnellwahlBetrag = (betrag: number) => {
-    setGezahlterBetrag(betrag.toString().replace('.', ','));
-    setZeigeNummerTastatur(false);
+  const handleVerkaufAbschliessen = async () => {
+    if (ausgewaehlteArtikel.length === 0) {
+      alert('Bitte wählen Sie mindestens einen Artikel aus.');
+      return;
+    }
+
+    if (bezahlterBetrag < gesamtbetrag) {
+      alert('Der bezahlte Betrag ist zu niedrig.');
+      return;
+    }
+
+    const verkaufDaten: Verkauf = {
+      id: Date.now(), // Temporäre ID, sollte durch Backend ersetzt werden
+      datum: new Date().toISOString(),
+      gesamtbetrag: gesamtbetrag,
+      bezahlter_betrag: bezahlterBetrag,
+      rueckgeld: rueckgeld,
+      artikel: ausgewaehlteArtikel.map(a => ({
+        id: Date.now(), // Temporäre ID
+        artikel_name: a.artikel_name,
+        preis: a.preis,
+        menge: a.menge || 1
+      }))
+    };
+
+    try {
+      await speichereVerkauf(verkaufDaten);
+      // Reset nach erfolgreichem Verkauf
+      setAusgewaehlteArtikel([]);
+      setBezahlterBetrag(0);
+      alert('Verkauf erfolgreich abgeschlossen!');
+    } catch (error) {
+      console.error('Fehler beim Speichern des Verkaufs:', error);
+      alert('Fehler beim Abschließen des Verkaufs');
+    }
   };
 
-  if (zeigeBezahlt) {
-    return (
-      <div className="bg-green-100 p-4 rounded-lg text-center">
-        <h2 className="text-2xl font-bold text-green-800 mb-2">Bezahlung erfolgreich!</h2>
-        <p className="text-green-700">Rückgeld: {formatCurrency(rueckgeld)}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white shadow-lg rounded-lg p-4">
-      <h2 className="text-xl font-bold mb-4">Zahlungsabwicklung</h2>
-
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        {SCHNELLWAHL_BETRAEGE.map((betrag) => (
-          <button
-            key={betrag}
-            className="bg-blue-100 hover:bg-blue-200 p-2 rounded"
-            onClick={() => handleSchnellwahlBetrag(betrag)}
-          >
-            {formatCurrency(betrag)}
-          </button>
-        ))}
-      </div>
-
-      <div className="mb-4">
-        {!zeigeNummerTastatur ? (
-          <button
-            className="w-full p-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-left"
-            onClick={() => setZeigeNummerTastatur(true)}
-          >
-            Manueller Betrag
-          </button>
-        ) : (
-          <div className="border rounded-lg p-4">
-            <NummerTastatur
-              wert={gezahlterBetrag}
-              onWertChange={setGezahlterBetrag}
-              onBestaetigen={() => {
-                if (gezahlterBetragNumeric >= gesamtbetrag) {
-                  handleBezahlung();
-                }
-              }}
-            />
+    <div className="flex flex-col md:flex-row gap-4 p-4">
+      <div className="w-full md:w-1/2">
+        <h2 className="text-xl font-bold mb-4">Artikel</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {artikelListe.map((artikel) => (
             <button
-              className="w-full mt-2 p-2 text-sm text-gray-600 hover:text-gray-800"
-              onClick={() => setZeigeNummerTastatur(false)}
+              key={artikel.id}
+              onClick={() => handleArtikelHinzufuegen({
+                artikel_name: artikel.name, 
+                preis: artikel.preis
+              })}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
             >
-              Nummerntastatur ausblenden
+              {artikel.name} <br />
+              {formatCurrency(artikel.preis)}
             </button>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
 
-      {gezahlterBetragNumeric > 0 && (
-        <div className="mb-4 p-4 bg-gray-100 rounded-lg">
-          <div className="grid grid-cols-2 gap-4 text-lg">
-            <div>
-              <p className="font-medium">Gesamtbetrag:</p>
-              <p className="font-medium">Gezahlt:</p>
-              <p className="font-bold text-xl">Rückgeld:</p>
+      <div className="w-full md:w-1/2">
+        <h2 className="text-xl font-bold mb-4">Warenkorb</h2>
+        <div className="border p-4 rounded">
+          {ausgewaehlteArtikel.map((artikel, index) => (
+            <div key={index} className="flex justify-between mb-2">
+              <span>{artikel.artikel_name}</span>
+              <div>
+                <span className="mr-2">{artikel.menge}x</span>
+                {formatCurrency(artikel.preis * artikel.menge)}
+              </div>
             </div>
-            <div className="text-right">
-              <p className="font-medium">{formatCurrency(gesamtbetrag)}</p>
-              <p className={`font-medium ${gezahlterBetragNumeric < gesamtbetrag ? 'text-red-600' : ''}`}>
-                {formatCurrency(gezahlterBetragNumeric)}
-              </p>
-              <p className="font-bold text-xl text-green-600">{formatCurrency(rueckgeld)}</p>
-            </div>
+          ))}
+          <hr className="my-2" />
+          <div className="flex justify-between font-bold">
+            <span>Gesamtbetrag:</span>
+            <span>{formatCurrency(gesamtbetrag)}</span>
           </div>
         </div>
-      )}
 
-      <button
-        className={`w-full p-3 rounded-lg ${
-          gezahlterBetragNumeric >= gesamtbetrag
-            ? 'bg-green-600 hover:bg-green-700'
-            : 'bg-gray-400 cursor-not-allowed'
-        } text-white font-bold`}
-        onClick={handleBezahlung}
-        disabled={gezahlterBetragNumeric < gesamtbetrag}
-      >
-        Bezahlen
-      </button>
+        <div className="mt-4">
+          <NummerTastatur 
+            onNumberInput={(num) => setBezahlterBetrag(num)}
+            betrag={bezahlterBetrag}
+          />
+        </div>
+
+        <div className="mt-4 flex justify-between items-center">
+          <div>
+            <span className="mr-2">Bezahlt:</span>
+            <span className="font-bold">{formatCurrency(bezahlterBetrag)}</span>
+          </div>
+          <div>
+            <span className="mr-2">Rückgeld:</span>
+            <span className="font-bold text-green-600">{formatCurrency(rueckgeld)}</span>
+          </div>
+        </div>
+
+        <button 
+          onClick={handleVerkaufAbschliessen}
+          className="w-full mt-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+        >
+          Verkauf abschließen
+        </button>
+      </div>
     </div>
   );
 };
